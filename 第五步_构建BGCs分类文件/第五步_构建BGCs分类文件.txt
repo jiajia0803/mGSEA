@@ -1,0 +1,16 @@
+#从BIG-FAM数据库下载肠道菌群BGCs序列（mag_humangut）命名为gut_BGC_backgroun.fasta，过滤掉其中aa小于60的序列，变成背景库文件（gut_BGC_backgroun_desolve.fasta）。
+awk 'BEGIN{OFS=FS="\t"}{if($0~/>/) name=$0 ;else seq[name]=seq[name]$0;}END{for(i in seq) {if(length(seq[i])>100) print i"\n"seq[i]}}' gut_BGC_backgroun.fasta > gut_BGC_backgroun_desolve.fasta
+##用diamond工具比对BGCs的基因文件和背景库文件以获取BGCs的分类。
+#diamond建库。
+diamond makedb --in gut_BGC_backgroun_desolve.fasta --db nr
+BGCs的基因文件——“file_name.fa”文件中，有些序列末尾会有一些下划线，diamond会报错，需要删掉。
+#删掉核酸文件中的特殊字符(不同数量的下划线)。
+sed "/,/d" file_name.fa >  file_name_1.fa;sed 's/_____\+//g' file_name_1.fa >file_name_2.fa;sed 's/____\+//g' file_name_2.fa >file_name_3.fa;sed 's/___\+//g' file_name_3.fa >file_name_4.fa;sed 's/__\+//g' file_name_4.fa >file_name_5.fa
+#把处理好的序列放入新的文件夹，以便后续处理。
+find -name '*_5.fa' -exec cp {} /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/BGC_prediect_result_1338/deslove \;
+#diamond比对。
+diamond blastx --db nr -q file_name_5.fa -o file_name_fmt.txt 
+#筛选比对结果中，e值小于10-5次方的结果（第11列是E value值），输出到file_name_fmt_1.txt文件中。
+awk '{if($11<=1e-05) print $0}' file_name_fmt.txt > file_name_fmt_1.txt
+#提取“file_name_fmt_1.txt”文件的前2列，即为BGCs的分类文件。
+awk '{print $1,$4}' file_name_fmt_1.txt > file_name_fmt_2.txt

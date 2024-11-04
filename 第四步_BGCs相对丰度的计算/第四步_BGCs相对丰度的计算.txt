@@ -1,0 +1,14 @@
+##salmon计算BGCs的相对丰度。
+#创建salmon虚拟环境，安装salmon工具。
+conda create --name salmon
+conda activate salmon
+conda install salmon
+#salmon构建索引,file_name.fa是第三步中的BGCs基因文件。
+salmon index -t file_name.fa -i transcripts_index
+#salmon计算BGCs的相对丰度,"file_name_transcripts_quant"文件夹中的quant.sf就是包含BGCs相对丰度的文件。
+salmon quant -i transcripts_index  -l A -1 file_name_1.fastq -2 file_name_2.fastq -o file_name_transcripts_quant
+#将quant.sf格式转为txt格式。
+cat file_quant.sf > file_quant.txt
+#提取文件的第一列和第四列，输出到file_quant_1.txt。“file_quant_1.txt”即为BGCs的相对丰度文件。
+awk '{print $1,$4}' file_quant.txt > file_quant_1.txt
+

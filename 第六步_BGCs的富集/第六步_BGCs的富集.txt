@@ -1,0 +1,2 @@
+#编写R脚本，计算BGCs的富集程度。
+Rscript mGSEA_enrichment.R

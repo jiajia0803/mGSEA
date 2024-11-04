@@ -1,0 +1,17 @@
+##安装deepBGC工具（用于预测肠道菌群中的BGC。若有更好的工具，可替换该工具），deepBGC需要在Conda创建的环境中使用。
+#添加bioconda源和conda-forge。
+conda config --add channels bioconda
+conda config --add channels conda-forge
+#创建deepBGC虚拟环境，安装依赖工具。
+conda create -n deepbgc python=3.7 hmmer prodigal
+#激活deepBGC虚拟环境。
+conda activate deepbgc
+#安装deepBGC。
+conda install deepbgc
+#下载训练好的模型和Pfam数据库。
+deepbgc download
+#查看下载的依赖和模型。
+deepbgc info
+
+
+

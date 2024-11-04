@@ -1,0 +1,12 @@
+#deepBGC工具预测BGC。“file_scaffolds.fasta为组装后的contig文件”，（加“--prodigal-meta-mode”可以检测短contigs中的基因）。
+deepbgc pipeline --prodigal-meta-mode  file_scaffolds.fasta
+#每个样本，deepBGC预测后都会生成一个xx.bgc.tsv后缀的结果文件，该文件包含多条序列的预测结果，为避免批量处理时，混淆结果，先在每个xx.bgc.tsv文件的第一列添加上样本名称。"^"表示第一列 "sed -i"表示直接在文件中修改，不打印出来。
+for file in xx.bgc.tsv; do sed -i "s/^/$file/" "$file"; done
+#合并所有bgc.tsv后缀的deepBGC预测结果文件，方便批量处理，生成一个名为all.bgc.tsv的汇总文件。
+find ./ -name "*.bgc.tsv"| xargs cat > all.bgc.tsv
+#删掉all.bgc.tsv文件第18列（product_class列）为空值的行，输出新结果到all.bgc_1.tsv中。
+awk -F, '$11 != ""' all.bgc.tsv > all.bgc_1.tsv
+#筛选all.bgc_1.tsv文件第12列（deepbgc_score列）阈值大于0.5的结果，输出到all.bgc_2.tsv文件中。all.bgc_2.tsv文件即为deepBGC预测的BGC结果，包含BGC基因集的名称及可能的预测分类。
+awk -F, '$3 > 0.5' all.bgc_1.tsv > all.bgc_2.tsv
+
+
