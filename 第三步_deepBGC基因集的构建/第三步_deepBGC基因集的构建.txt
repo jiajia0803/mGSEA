@@ -1,0 +1,32 @@
+#将deepBGC预测结果中的所有的genbank文件汇总到一个名为“all_deepBGC_gbk”的新文件夹，便于批量处理。
+find -name '*.gbk' -exec cp {} /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/all_deepBGC_gbk \;
+#查看all_deepBGC_gbk文件中有哪些genbank文件。
+cd /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/all_deepBGC_gbk && ls
+#用pick_fa.py脚本从genbank文件中提取核苷酸序列
+python pick_fa.py
+#将从genbank文件中提取核苷酸序列文件汇总到一个名为“all_deepBGC_fna”的新文件夹，便于批量处理。
+find -name '*.bgc.fna' -exec cp {} /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/all_deepBGC_fna \;
+#查看all_deepBGC_fna文件中有哪些核苷酸序列文件。
+cd /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/all_deepBGC_fna && ls
+#为每个核苷酸序列文件中的每条序列前加上文件名。例如在SRR5935758_all.1.bgc.fna文件中的每条序列前加上文件名“SRR5935758_all.1”。
+sed -i "s/>NODE/>SRR5935758_all.1_NODE/" SRR5935758_all.1.bgc.fna
+#将all_deepBGC_fna文件夹中，每条序列前加上文件名后的所有bgc.fna后缀的文件合并为all.bgc.fna。
+find ./ -name "*.bgc.fna"| xargs cat > all.bgc.fna
+#用SeqKit工具按第一步中筛选后的deepBGC预测结果（all.bgc_2.tsv）中第一列的ID提取对应的BGC基因集序列。
+#创建SeqKit虚拟环境，安装SeqKit工具。
+conda create --name seqkit
+conda activate seqkit
+conda install seqkit
+#seqkit工具要求输入的fa文件需为压缩文件，输入的ID文件为txt文件，需要先对待输入文件进行处理。
+#将all.bgc.fna压缩为gz文件
+gzip -c all.bgc.fna > all.bgc.fna.gz
+#只保留all.bgc_2.tsv文件的第一列作为BGCs的ID文件
+awk -F, '{print $1}' all.bgc_2.tsv > all.bgc_3.txt
+#SeqKit根据deepBGC预测的BGC的ID提取BGC的基因集序列。
+zcat all.bgc.fna.gz | seqkit grep -f all.bgc_3.txt > picked_new.fa
+#将picked_new.fa压缩为gz文件。
+gzip -c picked_new.fa > picked_new.fa.gz
+#再按id将按BGCs ID挑选后的BGCs基因集序列（picked_new.fa.gz）拆分为单个fa文件。
+seqkit split picked_new.fa.gz -i --id-regexp "^([\w]+)\-" -2
+#把同一样本的BGC基因集合并到一起，即为该样本的BGCs基因集。
+cat *SRR5935758* > SRR5935758.fa
