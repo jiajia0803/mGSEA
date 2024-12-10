@@ -1,0 +1,14 @@
+## Calculate the relative abundance of BGCs using salmon.
+# Create a salmon virtual environment and install the salmon tool.
+conda create --name salmon
+conda activate salmon
+conda install salmon
+# Build the index with salmon; file_name.fa is the BGCs gene file from step three.
+salmon index -t file_name.fa -i transcripts_index
+# Calculate the relative abundance of BGCs with salmon; the quant.sf file in the "file_name_transcripts_quant" folder contains the relative abundance of BGCs.
+salmon quant -i transcripts_index  -l A -1 file_name_1.fastq -2 file_name_2.fastq -o file_name_transcripts_quant
+# Convert the quant.sf format to txt format.
+cat file_quant.sf > file_quant.txt
+#Extract the first and fourth columns of the file and output to file_quant_1.txt. "file_quant_1.txt" is the relative abundance file for BGCs.
+awk '{print $1,$4}' file_quant.txt > file_quant_1.txt
+
