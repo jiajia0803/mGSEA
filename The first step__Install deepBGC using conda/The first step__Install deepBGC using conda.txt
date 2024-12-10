@@ -1,0 +1,17 @@
+Install the deepBGC tool (for predicting BGCs in the gut microbiome. If there is a better tool available, replace this one), deepBGC needs to be used in an environment created by Conda.
+# Add the bioconda channel and conda-forge.
+conda config --add channels bioconda
+conda config --add channels conda-forge
+#Create a virtual environment for deepBGC and install dependent tools.
+conda create -n deepbgc python=3.7 hmmer prodigal
+#Activate the deepBGC virtual environment.
+conda activate deepbgc
+#Install deepBGC.
+conda install deepbgc
+#Download the pre-trained models and Pfam database.
+deepbgc download
+#Check the downloaded dependencies and models.
+deepbgc info
+
+
+
