@@ -1,0 +1,16 @@
+#Download the gut microbiome BGCs sequences (mag_humangut) from the BIG-FAM database and name it gut_BGC_backgroun.fasta, then filter out sequences with less than 60 amino acids to create a background library file (gut_BGC_backgroun_desolve.fasta).
+awk 'BEGIN{OFS=FS="\t"}{if($0~/>/) name=$0 ;else seq[name]=seq[name]$0;}END{for(i in seq) {if(length(seq[i])>100) print i"\n"seq[i]}}' gut_BGC_backgroun.fasta > gut_BGC_backgroun_desolve.fasta
+##Use the diamond tool to align the BGCs gene file with the background library file to obtain the classification of BGCs.
+# Create a diamond database.
+diamond makedb --in gut_BGC_backgroun_desolve.fasta --db nr
+The BGCs gene file -- “file_name.fa” file may have some sequences with trailing underscores, which can cause diamond to throw an error and need to be removed.
+#Remove special characters (various numbers of underscores) from the nucleic acid file.
+sed "/,/d" file_name.fa >  file_name_1.fa;sed 's/_____\+//g' file_name_1.fa >file_name_2.fa;sed 's/____\+//g' file_name_2.fa >file_name_3.fa;sed 's/___\+//g' file_name_3.fa >file_name_4.fa;sed 's/__\+//g' file_name_4.fa >file_name_5.fa
+#Place the processed sequences into a new folder for subsequent processing.
+find -name '*_5.fa' -exec cp {} /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/BGC_prediect_result_1338/deslove \;
+#Diamond alignment.
+diamond blastx --db nr -q file_name_5.fa -o file_name_fmt.txt 
+#Filter the alignment results where the E-value is less than 10^-5 (the 11th column is the E-value), and output to the file_name_fmt_1.txt file.
+awk '{if($11<=1e-05) print $0}' file_name_fmt.txt > file_name_fmt_1.txt
+#Extract the first two columns of the "file_name_fmt_1.txt" file to get the BGCs classification file.
+awk '{print $1,$4}' file_name_fmt_1.txt > file_name_fmt_2.txt
