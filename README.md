@@ -1,4 +1,4 @@
-# mGSEA: metagenomic single sample Gene Set Enrichment Analysis  
+##mGSEA: metagenomic single sample Gene Set Enrichment Analysis  
 
 mGSEA is a novel tool developed based on the principle of ssGSEA.
 mGSEA is a tool that can be applied to the analysis of metagenomic or metatranscriptomic data.
@@ -23,7 +23,7 @@ deepbgc download
 #Check the downloaded dependencies and models.
 deepbgc info
 ```
-#Predict BGCs with the deepBGC tool and filter the prediction results
+##Predict BGCs with the deepBGC tool and filter the prediction results
 
 ```bash
 #The deepBGC tool is used to predict BGCs. "file_scaffolds.fasta" is the contig file after assembly. (Adding "--prodigal-meta-mode" can detect genes in short contigs).
@@ -37,7 +37,7 @@ awk -F, '$11 != ""' all.bgc.tsv > all.bgc_1.tsv
 #Filter the results in the all.bgc_1.tsv file where the 12th column (deepbgc_score column) has a value greater than 0.5, and output to the all.bgc_2.tsv file. The all.bgc_2.tsv file contains the BGC prediction results from deepBGC, including the names of the BGC gene sets and possible predicted classifications.
 awk -F, '$3 > 0.5' all.bgc_1.tsv > all.bgc_2.tsv
 ```
-#Construction of deepBGC Gene Sets
+##Construction of deepBGC Gene Sets
 
 ```bash
 #Combine all the genbank files from the deepBGC prediction results into a new folder named "all_deepBGC_gbk" for batch processing.
@@ -48,7 +48,7 @@ cd /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/all_deepBGC_gbk && ls
 python pick_fa.py
 # The following are some examples.
 ```
-#python
+##python
 #Write a Python script named pick_fa.py to extract nucleic acid sequences from genbank files such as "SRR5935758_all.1.bgc.gbk", "SRR5935758_all.2.bgc.gbk", "SRR5946523_all.1.bgc.gbk"... genbank files.
 from Bio import SeqIO
 gbk_filename = "SRR5935758_all.1.bgc.gbk"
@@ -121,7 +121,7 @@ seqkit split picked_new.fa.gz -i --id-regexp "^([\w]+)\-" -2
 #Combine the BGC gene sets from the same sample to get the BGCs gene set for that sample.
 cat *SRR5935758* > SRR5935758.fa
 ```
-#Calculation of BGCs Relative Abundance
+##Calculation of BGCs Relative Abundance
 
 ```bash
 ##Use salmon to calculate the relative abundance of BGCs.
@@ -138,7 +138,7 @@ cat file_quant.sf > file_quant.txt
 #Extract the first and fourth columns of the file and output to file_quant_1.txt. "file_quant_1.txt" is the relative abundance file for BGCs.
 awk '{print $1,$4}' file_quant.txt > file_quant_1.txt
 ```
-# Construction of BGCs Classification File
+##Construction of BGCs Classification File
 
 ```bash
 #The gut microbiome BGCs sequence (mag_humangut) can be replaced with other BGCs data you want to explore.
@@ -159,7 +159,7 @@ awk '{if($11<=1e-05) print $0}' file_name_fmt.txt > file_name_fmt_1.txt
 #Extract the first two columns of the "file_name_fmt_1.txt" file to get the BGCs classification file.
 awk '{print $1,$4}' file_name_fmt_1.txt > file_name_fmt_2.txt
 ```
-#Enrichment of BGCs
+##Enrichment of BGCs
 #R
 #'file_quant_1.txt' is the relative abundance file of BGCs from step 4, and 'file_name_fmt_2.txt' is the classification file of BGCs from step 5.
 gene_set<- read.csv('file1_name_fmt_2.txt',header = F,sep = " ")
