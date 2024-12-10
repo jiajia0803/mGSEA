@@ -1,0 +1,12 @@
+#The deepBGC tool is used for predicting BGCs. "file_scaffolds.fasta" is the contig file after assembly, and adding "--prodigal-meta-mode" can detect genes in short contigs.
+deepbgc pipeline --prodigal-meta-mode  file_scaffolds.fasta
+#For each sample, after deepBGC prediction, a result file with the suffix xx.bgc.tsv will be generated, which contains the prediction results of multiple sequences. To avoid confusing the results during batch processing, add the sample name to the first column of each xx.bgc.tsv file. The "^" symbol indicates the first column, and "sed -i" means to modify the file directly without printing it out.
+for file in xx.bgc.tsv; do sed -i "s/^/$file/" "$file"; done
+#Merge all deepBGC prediction result files with the suffix .bgc.tsv to facilitate batch processing and generate a summary file named all.bgc.tsv.
+find ./ -name "*.bgc.tsv"| xargs cat > all.bgc.tsv
+#Remove rows with empty values in the 18th column (product_class column) of the all.bgc.tsv file and output the new results to all.bgc_1.tsv.
+awk -F, '$11 != ""' all.bgc.tsv > all.bgc_1.tsv
+#Filter the results in the all.bgc_1.tsv file where the 12th column (deepbgc_score column) has a value greater than 0.5 and output to the all.bgc_2.tsv file. The all.bgc_2.tsv file contains the BGC prediction results from deepBGC, including the names of the BGC gene sets and possible predicted classifications.
+awk -F, '$3 > 0.5' all.bgc_1.tsv > all.bgc_2.tsv
+
+
