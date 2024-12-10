@@ -96,28 +96,38 @@ input_handle.close()
 ```bash
 #Combine all the nucleotide sequence files extracted from the genbank files into a new folder named "all_deepBGC_fna" for batch processing.
 find -name '*.bgc.fna' -exec cp {} /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/all_deepBGC_fna \;
+
 #Check which nucleotide sequence files are in the all_deepBGC_fna folder.
 cd /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/all_deepBGC_fna && ls
+
 #Add the filename to the beginning of each sequence in the nucleotide sequence files. For example, add the filename "SRR5935758_all.1" to the beginning of each sequence in the SRR5935758_all.1.bgc.fna file.
 sed -i "s/>NODE/>SRR5935758_all.1_NODE/" SRR5935758_all.1.bgc.fna
+
 #Merge all bgc.fna files with filenames added to the beginning of each sequence in the all_deepBGC_fna folder into a single file named all.bgc.fna.
 find ./ -name "*.bgc.fna"| xargs cat > all.bgc.fna
+
 # Use the SeqKit tool to extract the BGC gene set sequences according to the IDs in the first column of the deepBGC prediction results (all.bgc_2.tsv).
 #Create a SeqKit virtual environment and install the SeqKit tool.
 conda create --name seqkit
 conda activate seqkit
 conda install seqkit
+
 #SeqKit requires the input fa file to be a compressed file, and the input ID file to be a txt file, so preprocess the input files first.
 #Compress the all.bgc.fna into a gz file
 gzip -c all.bgc.fna > all.bgc.fna.gz
+
 #Keep only the first column of the all.bgc_2.tsv file as the ID file for the BGCs.
 awk -F, '{print $1}' all.bgc_2.tsv > all.bgc_3.txt
+
 #SeqKit extracts the BGC gene set sequences based on the IDs predicted by deepBGC.
 zcat all.bgc.fna.gz | seqkit grep -f all.bgc_3.txt > picked_new.fa
+
 #Compress the picked_new.fa into a gz file.
 gzip -c picked_new.fa > picked_new.fa.gz
+
 #Then split the BGC gene set sequences picked by BGCs ID (picked_new.fa.gz) into individual fa files.
 seqkit split picked_new.fa.gz -i --id-regexp "^([\w]+)\-" -2
+
 #Combine the BGC gene sets from the same sample to get the BGCs gene set for that sample.
 cat *SRR5935758* > SRR5935758.fa
 ```
@@ -160,7 +170,6 @@ awk '{if($11<=1e-05) print $0}' file_name_fmt.txt > file_name_fmt_1.txt
 awk '{print $1,$4}' file_name_fmt_1.txt > file_name_fmt_2.txt
 ```
 # Enrichment of BGCs
-#R
 #'file_quant_1.txt' is the relative abundance file of BGCs from step 4, and 'file_name_fmt_2.txt' is the classification file of BGCs from step 5.
 gene_set<- read.csv('file1_name_fmt_2.txt',header = F,sep = " ")
 list<- split(as.matrix(gene_set)[,1], gene_set[,2])
@@ -206,7 +215,5 @@ for (i in 1:length(list)) {
 gsva_matrix<- gsva(as.matrix(uni_matrix), list,method='ssgsea',kcdf='Gaussian',abs.ranking=TRUE)
 write.csv(gsva_matrix, "file3_BGC_score.csv")
 #You can enter multiple loops.
-```bash
 # Write an R script to calculate the enrichment of BGCs.
 Rscript mGSEA_enrichment.R
-```
