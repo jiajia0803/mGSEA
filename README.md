@@ -5,7 +5,7 @@ mGSEA is a tool that can be applied to the analysis of metagenomic or metatransc
 mGSEA can calculate the enrichment scores of BGCs in individual metagenomic samples.
 For mGSEA analysis, two key files are required: the abundance data of BGCs and the classification information of BGCs.
 
-## The first step is to install deepBGC using conda.
+## Install deepBGC using conda.
 
 ```bash
 #Install the deepBGC tool (for predicting BGCs in the gut microbiome. If there is a better tool available, replace this one).
