@@ -1,0 +1,2 @@
+# Write an R script to calculate the enrichment degree of BGCs.
+Rscript mGSEA_enrichment.R
