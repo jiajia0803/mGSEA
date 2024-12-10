@@ -12,14 +12,19 @@ For mGSEA analysis, two key files are required: the abundance data of BGCs and t
 #Add the bioconda channel and conda-forge.
 conda config --add channels bioconda
 conda config --add channels conda-forge
+
 #Create a virtual environment for deepBGC and install dependent tools.
 conda create -n deepbgc python=3.7 hmmer prodigal
+
 #Activate the deepBGC virtual environment.
 conda activate deepbgc
+
 #Install deepBGC.
 conda install deepbgc
+
 #Download the pre-trained models and Pfam database.
 deepbgc download
+
 #Check the downloaded dependencies and models.
 deepbgc info
 ```
@@ -32,8 +37,10 @@ For each sample, a result file with the suffix xx.bgc.tsv will be generated afte
 for file in xx.bgc.tsv; do sed -i "s/^/$file/" "$file"; done
 Merge all deepBGC prediction result files with the suffix .bgc.tsv for batch processing, and generate a summary file named all.bgc.tsv.
 find ./ -name "*.bgc.tsv"| xargs cat > all.bgc.tsv
+
 #Delete rows with empty values in the 18th column (product_class column) of the all.bgc.tsv file, and output the new results to the all.bgc_1.tsv file.
 awk -F, '$11 != ""' all.bgc.tsv > all.bgc_1.tsv
+
 #Filter the results in the all.bgc_1.tsv file where the 12th column (deepbgc_score column) has a value greater than 0.5, and output to the all.bgc_2.tsv file. The all.bgc_2.tsv file contains the BGC prediction results from deepBGC, including the names of the BGC gene sets and possible predicted classifications.
 awk -F, '$3 > 0.5' all.bgc_1.tsv > all.bgc_2.tsv
 ```
@@ -42,14 +49,18 @@ awk -F, '$3 > 0.5' all.bgc_1.tsv > all.bgc_2.tsv
 ```bash
 #Combine all the genbank files from the deepBGC prediction results into a new folder named "all_deepBGC_gbk" for batch processing.
 find -name '*.gbk' -exec cp {} /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/all_deepBGC_gbk \;
+
 #Check which genbank files are in the all_deepBGC_gbk folder.
 cd /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/all_deepBGC_gbk && ls
+
 # Use the pick_fa.py script to extract nucleotide sequences from the genbank files.
 python pick_fa.py
+
 # The following are some examples.
 ```
-#python
+
 #Write a Python script named pick_fa.py to extract nucleic acid sequences from genbank files such as "SRR5935758_all.1.bgc.gbk", "SRR5935758_all.2.bgc.gbk", "SRR5946523_all.1.bgc.gbk"... genbank files.
+
 from Bio import SeqIO
 gbk_filename = "SRR5935758_all.1.bgc.gbk"
 faa_filename = "SRR5935758_all.1.bgc.fna"
@@ -139,12 +150,16 @@ cat *SRR5935758* > SRR5935758.fa
 conda create --name salmon
 conda activate salmon
 conda install salmon
+
 #Build the index with salmon, where file_name.fa is the BGCs gene file from step 3.
 salmon index -t file_name.fa -i transcripts_index
+
 #Calculate the relative abundance of BGCs with salmon, the "quant.sf" file in the "file_name_transcripts_quant" folder contains the relative abundance of BGCs.
 salmon quant -i transcripts_index  -l A -1 file_name_1.fastq -2 file_name_2.fastq -o file_name_transcripts_quant
+
 #Convert the quant.sf format to txt format.
 cat file_quant.sf > file_quant.txt
+
 #Extract the first and fourth columns of the file and output to file_quant_1.txt. "file_quant_1.txt" is the relative abundance file for BGCs.
 awk '{print $1,$4}' file_quant.txt > file_quant_1.txt
 ```
@@ -154,22 +169,29 @@ awk '{print $1,$4}' file_quant.txt > file_quant_1.txt
 #The gut microbiome BGCs sequence (mag_humangut) can be replaced with other BGCs data you want to explore.
 # Download the gut microbiome BGCs sequence (mag_humangut) from the BIG-FAM database and name it gut_BGC_backgroun.fasta, filter out sequences with aa less than 60 to become the background file (gut_BGC_backgroun_desolve.fasta).
 awk 'BEGIN{OFS=FS="\t"}{if($0~/>/) name=$0 ;else seq[name]=seq[name]$0;}END{for(i in seq) {if(length(seq[i])>100) print i"\n"seq[i]}}' gut_BGC_backgroun.fasta > gut_BGC_backgroun_desolve.fasta
+
 ##Use the diamond tool to match the BGCs gene file and the background file to obtain the classification of BGCs.
 #Build the diamond database.
 diamond makedb --in gut_BGC_backgroun_desolve.fasta --db nr
+
 #There are some sequences with trailing underscores in the BGCs gene file -- "file_name.fa" file, diamond will report an error and need to be deleted.
 # Remove special characters (different numbers of underscores) from the nucleic acid file.
 sed "/,/d" file_name.fa >  file_name_1.fa;sed 's/_____\+//g' file_name_1.fa >file_name_2.fa;sed 's/____\+//g' file_name_2.fa >file_name_3.fa;sed 's/___\+//g' file_name_3.fa >file_name_4.fa;sed 's/__\+//g' file_name_4.fa >file_name_5.fa
+
 #Put the processed sequences into a new folder for subsequent processing.
 find -name '*_5.fa' -exec cp {} /mnt/data1/ZhouJiaJia/HMP_IBD/HMP_1338/MG_1338/BGC_prediect_result_1338/deslove \;
+
 #Diamond alignment.
 diamond blastx --db nr -q file_name_5.fa -o file_name_fmt.txt 
+
 # Filter the alignment results where the e-value is less than 10^-5 (the 11th column is the E value), and output to the file_name_fmt_1.txt file.
 awk '{if($11<=1e-05) print $0}' file_name_fmt.txt > file_name_fmt_1.txt
+
 #Extract the first two columns of the "file_name_fmt_1.txt" file to get the BGCs classification file.
 awk '{print $1,$4}' file_name_fmt_1.txt > file_name_fmt_2.txt
 ```
 # Enrichment of BGCs
+
 #'file_quant_1.txt' is the relative abundance file of BGCs from step 4, and 'file_name_fmt_2.txt' is the classification file of BGCs from step 5.
 gene_set<- read.csv('file1_name_fmt_2.txt',header = F,sep = " ")
 list<- split(as.matrix(gene_set)[,1], gene_set[,2])
